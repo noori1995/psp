@@ -1,17 +1,23 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <TransactionsList v-if="isLoggedIn" />
+    <LoginPage v-else />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import LoginPage from './components/LoginPage'
+import TransactionsList from './components/TransactionsList'
+import { mapGetters } from "vuex";
 export default {
-  name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    LoginPage,
+    TransactionsList
+  },
+  computed: {
+    ...mapGetters(["isLoggedIn"])
+  },
+};
 </script>
 
 <style>
