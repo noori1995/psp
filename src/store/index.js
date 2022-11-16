@@ -47,13 +47,14 @@ export const store = createStore({
       async getTransactionsList (context, payload) {
         context.commit('SET_TRANSACTIONS_LIST', null)
         try{
-          const res = await window.axios.post('v1/shaparak/report', payload?.body ? payload?.body : {}, {
+          const res = await window.axios.post('/v1/transaction/report', payload?.body ? payload?.body : {}, {
             headers:{
               Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
             }
           } )
           if(res.status === 200 && res.data){
-            context.commit('SET_TRANSACTIONS_LIST', res.data.shaparak.ShaparakDetails)
+            console.log(res.data)
+            context.commit('SET_TRANSACTIONS_LIST', res.data.Transactions)
           }
         }
         catch(err) {

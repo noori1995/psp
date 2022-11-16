@@ -4,15 +4,36 @@
       v-slot="{ meta }"
       :validation-schema="simpleSchema"
       @submit="submitForm"
+      ref="form"
     >
       <div class="d-flex w-50 m-auto mb-3">
+        <Field name="id" type="number" class="form-control" placeholder="id" />
         <Field
-          name="transaction_id"
+          name="type"
+          type="text"
+          class="form-control"
+          placeholder="type"
+        />
+        <Field
+          name="currency_code"
           type="number"
           class="form-control"
-          placeholder="Transaction ID"
+          placeholder="currency_code"
+        />
+        <Field
+          name="amount"
+          type="number"
+          class="form-control"
+          placeholder="amount"
+        />
+        <Field
+          name="channel_id"
+          type="text"
+          class="form-control"
+          placeholder="channel_id"
         />
         <button
+          ref="button"
           type="submit"
           class="btn btn-primary mx-2"
           :disabled="!meta.valid"
@@ -34,9 +55,9 @@
             <th scope="col">#</th>
             <th scope="col">id</th>
             <th scope="col">type</th>
-            <th scope="col">institute id</th>
+            <th scope="col">currency_code</th>
             <th scope="col">amount</th>
-            <th scope="col">date_time_toshaparak</th>
+            <th scope="col">channel_id</th>
           </tr>
         </thead>
         <tbody>
@@ -47,12 +68,17 @@
             <th scope="row" v-text="index + 1" />
             <td v-text="transaction.id" />
             <td v-text="transaction.type" />
-            <td v-text="transaction.institute_id" />
+            <td v-text="transaction.currency_code" />
             <td v-text="transaction.amount" />
-            <td v-text="new Date(+transaction.date_time_toshaparak * 1000)" />
+            <td v-text="transaction.channel_id" />
           </tr>
         </tbody>
       </table>
+      <nav class="d-flex">
+        <ul class="pagination m-auto">
+          <li v-for="page in available_pages" :key="page" class="page-item" :class="current_page === page ? 'active' : ''" @click="selectPage(page)"><label class="page-link">{{page}}</label></li>
+        </ul>
+      </nav>
     </div>
   </div>
 </template>
@@ -69,8 +95,11 @@ export default {
   data() {
     return {
       simpleSchema: {
-        transaction_id: yup.number().required(),
+        transaction_id: yup.number(),
       },
+      available_pages: [1,2,3],
+      current_page: 1,
+      page_size: 10,
       isLoading: false,
     };
   },
@@ -86,11 +115,31 @@ export default {
   },
   methods: {
     ...mapActions(["getTransactionsList"]),
+    editData(data) {
+      if (+data == data) {
+        return +data;
+      } else return data;
+    },
+    async selectPage(page){
+      this.current_page = +page
+      this.$refs.button.click()
+    },
     async submitForm(form) {
       this.isLoading = true;
       try {
+        const body = {
+          transaction: {
+            offset: (this.current_page - 1) * this.page_size,
+            page_size: this.page_size,
+          },
+        };
+        for (const field in form) {
+          if (form[field]) {
+            body.transaction[field] = this.editData(form[field]);
+          }
+        }
         await this.getTransactionsList({
-          body: { transaction_id: +form.transaction_id },
+          body: body,
         });
       } catch (err) {
         console.error(err);
